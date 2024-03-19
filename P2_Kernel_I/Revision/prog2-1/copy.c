@@ -1,0 +1,128 @@
+/*
+Course: CS3411 R01
+1;95;0cAuthor: Chanpech Hoeng
+Date: 10/2/2022
+Instructor: Dr. Soner Onder
+ */
+#include <stdio.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <ctype.h>
+extern int errno;
+
+
+int main(int argc, char **argv, char ** env){
+
+  //Initial usage variable
+  int infile;
+  int outfile;
+  int blocksize;
+
+  int fd = open("/dev/tty", O_WRONLY);
+  
+  if(argc <= 2){
+    
+    char str[] = "Error program expect: copy <infile> <outfile> [blocksize]\n";
+    write(fd, str, sizeof(str));
+    exit(1);
+
+  }else if(argc == 3){
+    
+    //default blocksize to 1024 bytes if argument argument is skipped.
+    blocksize = 1024; 
+
+  }else{
+    if(!isdigit(argv[3][0])){
+      char str[] = "Invalid blocksize!\n";
+      write(fd, str, sizeof(str));
+      exit(1);
+    }
+    blocksize = atoi(argv[3]);
+    
+  }
+  printf("content of argv[1] = %s\n", argv[1]); 
+  infile = open(argv[1], O_RDWR, 0600);
+  outfile = open(argv[2], O_RDWR | O_CREAT, 0600);
+  printf("argv[1] = %d\n", infile); 
+  //Checking if blocksize is a multiple of 4
+  if(blocksize % 4 != 0 ){
+    
+    int round_up = 4 - blocksize % 4;
+    blocksize = blocksize + round_up;
+    
+    char str[] = "Warning: input blocksize is not multiple of 4 thus been rounded up\n";
+    write(fd, str, sizeof(str));
+    
+  }
+
+  //Character for read bytes
+  char *buff = (char *) calloc(100, sizeof(char));
+  ssize_t num; 
+
+  //Checking the validy of the read in file
+  if(infile == -1 || outfile == -1){
+
+    char str[15];
+    sprintf(str, "Error Number %d\n", errno);
+    write(fd, str, sizeof(str));
+
+    char error[] = "Program: No such file or directory\n";
+    write(fd, error, sizeof(error));
+    free(buff);
+    exit(1);
+
+  }
+
+  int current_bytes = 0;
+  unsigned int checkSum = 0;
+
+  //Loop will end at given block size or when padding occur
+  while(current_bytes < blocksize){
+    
+    num = read(infile, buff, 4);
+
+    //pad the bytes with zero
+    if(num < 4){
+
+      int padIndex = num;
+
+      while( padIndex < 4){
+	
+	buff[padIndex] = '\0';
+	padIndex++;
+
+      }
+    }
+
+    // XOR all characters in buff
+    checkSum = buff[0] ^ buff[1] ^ buff[2] ^ buff[3];
+
+    // Writing the hexadecimal number of checksum to stdout
+    char str[9];
+    
+    sprintf(str, "%08x ", checkSum);
+    write(fd, str, sizeof(str));
+
+    // Write the current block the output file
+    ssize_t writeR = write(outfile, buff, num);
+
+    // Checking for write error
+    if(writeR == -1){
+
+      char str[] = "Program failed: error at write()";
+      write(fd, str, sizeof(str));
+      exit(1);
+
+    }
+    
+    current_bytes = current_bytes + 4;
+    if(num == 0)
+      break;    
+  }
+  
+  write(fd, "\n", 1);
+  free(buff);
+  return 0;
+}

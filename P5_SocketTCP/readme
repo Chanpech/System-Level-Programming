@@ -1,0 +1,66 @@
+1st Part:
+No socket at all just.
+Wrapper functions.
+
+
+Thursday before break soft deadline: chance to get up to 40 points.
+
+
+2nd Part:
+Implement TCP by creating a virtual pipes between client and the server.
+Pretty much creating an interface in calling syscall remotely (server).
+5 - 6 syscall
+
+Files given:
+server.c ~ handles running the system
+~Set up the partial implemented main
+~Handle requests and determine what suppose to do
+    -> Select() or if()
+Should call free() eventually to free the malloc allocated by read_from_client(); //Will be blcok 
+~int *x = read_from_client();
+~free(x);
+
+
+
+client.c ~ API for sending the syscall
+~Fill in function that coonnects you to the server
+~Fully implemented send and receive
+~send packaged data for you
+~receive read for you 
+~client should send the flags as well 
+
+Makefile
+~should combine client and user.c and client.c into one file
+~compile with make mix
+
+
+Additional users program for testing purposes(required):
+rp_user1.c
+
+rp_user2.c 
+
+Technical stuff:
+error: should use errrno(); 
+still writing the binding()
+port(); //should specify 0 as it will tell bind() to randomly assign a port num.
+multiple clients handled by server: 
+~call fork()
+~look into inet_function.c
+
+
+See page 23 on the slide for all the stuffs we have to do.
+
+call send_to_server(&x, sizeof(x)); 
+//Already implmented as it first send the size follow by the data
+
+
+Hard deadline: The end of classes
+
+./rpclient1 arg1 arg2
+./rpclient1 address port remote_file local_file
+User1 copy
+User2 copy and seeking
+
+
+Handling multiple clients:
+Use fork call:

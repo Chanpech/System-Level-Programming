@@ -1,0 +1,9 @@
+Starting up Server:
+./rp_server 
+Once start the server should listen until EOF or forced close.
+
+Connecting Client to Server:
+./rp_user1 hostname port remote_file local_file
+./rp_user2 hostname port remote_file local_file
+
+

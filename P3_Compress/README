@@ -1,0 +1,25 @@
+Place your compression ratios/comments here.
+CR = (Vd + Vc) / Vc
+
+In the input-file and input-file.new tested, the following are the initial value.
+Vc = 394
+Vd = 445
+Plugging this into the equation above result in the following compression value.
+2.1294 roughtly mean 2 : 1
+
+Program files consists of: 
+bitsy.c
+bitsy.h
+czy.c
+dzy.c
+Makefile
+
+Goal of the program: 
+Develop a program called czy which compresses the data stream directed at
+its standard input and writes the compressed stream to its standard output and another program called dzy which decompresses a compressed stream directed at its standard input and writes decompressed data to its standard output.
+
+Compression follows the followwing format: 
+Infrequent/Unique byte with respect to previous 8 byte: 
+<1> <symbol>
+Frequent byte with respect to previous 8 byte: 
+<0> <postion>

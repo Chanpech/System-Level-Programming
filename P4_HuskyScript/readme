@@ -1,0 +1,20 @@
+Create a script command.
+./hscript <progam nam> <arguments> <directory>
+
+Say ./hscript /usr/bin/ls -l -a -h test
+hscript is the man in terminal that capture what happened between you and the terminal.
+It captured in the test.
+
+//open(diretory) with no truncate falg
+Just error out if it output an unexpected value.
+hscript will have to make a directory called out_dir that stores the stdin, stdout,stderror in files:
+0,1, and 2.
+
+All system call must be error checked.
+System call we likely have to use:
+int select(int nfds, fd_set *_Nullable restrict readfds,
+                  fd_set *_Nullable restrict writefds,
+                  fd_set *_Nullable restrict exceptfds,
+                  struct timeval *_Nullable restrict timeout);
+
+Program does not have to use signal() but will work if we do.

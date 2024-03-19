@@ -1,0 +1,21 @@
+Author: Chanpech Hoeng
+Lastest Updates: 9/17
+
+The the prog1 hmalloc program will consists of
+1. hmalloc.h
+2. main.c
+3. hmallo.c
+4. Makefile
+
+Goals:  
+Design a hmalloc program that simulate some basic features of malloc system call. 
+The features which the program will simulate are:
+1.hmalloc
+2.hfree
+3.hcalloc
+4.hrealloc
+
+Hmalloc will use the sbrk system call to request memory from the operating system. Those call are:
+    void *sbrk(intptr_t increment);
+On success, sbrk() returns the previous program break. (If the break was increased, then this value is a pointer to the start of the newly allocated memory) 
+On error, (void *) -1 is returned.

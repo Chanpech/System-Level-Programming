@@ -1,0 +1,6 @@
+Only use the padding for the chunks that is not 4 bytes
+Perform read from the file and output should write to standard out. 
+If we every issues a warning write to the standard error 
+(such as when user give insufficient size file or wrong file).
+Block should be 4 bytes if not give warning and round it up by padding to the right.
+No printf -> Use syscall, by char buff. Read() & Write().

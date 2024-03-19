@@ -1,0 +1,11 @@
+CS3411 Program II: Kernel and Block I/O
+
+The program requires the following command line inputs. 
+- copy <infile> <outfile> <blocksize>
+
+The program will read the contents of the file in blocks
+which can optionally be specified blocksize from the command line.
+If not provided, blocksize will be default to 1024 bytes.
+After the block will be read and computed by a checksum function 4 byte at a time.
+The checksum implement a XOR computation on the four consecutive bytes and xored to the sum. 
+In addition, during checksum computation if the partition block is not 4 byte modulo then it will be padded.

@@ -1,0 +1,14 @@
+total 80
+-rw-r--r--. 1 choeng isilon_du     0 Nov  3 19:26 a.out
+-rw-r--r--. 1 choeng isilon_du   445 Nov  6 20:07 file_test
+-rw-r--r--. 1 choeng isilon_du     0 Nov  2 15:07 file_test~
+-rwxr-xr-x. 1 choeng isilon_du 23176 Nov  6 22:14 hscript
+-rw-r--r--. 1 choeng isilon_du  8811 Nov  6 22:14 hscript.c
+-rw-r--r--. 1 choeng isilon_du  5335 Nov  2 16:29 hscript.c~
+drwxr-xr-x. 3 choeng isilon_du  4096 Nov  6 21:37 Iteration-Ps
+-rw-r--r--. 1 choeng isilon_du   159 Nov  6 21:31 Makefile
+drwx------. 2 choeng isilon_du  4096 Nov  6 22:14 out_
+drwx------. 2 choeng isilon_du  4096 Nov  6 19:42 out_dirm
+-rw-r--r--. 1 choeng isilon_du  3039 Nov  6 21:31 prog4.tar
+-rw-r--r--. 1 choeng isilon_du  3040 Nov  6 21:30 prog4.zip
+-rw-r--r--. 1 choeng isilon_du   797 Nov  6 21:29 readme

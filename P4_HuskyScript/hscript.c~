@@ -1,0 +1,196 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/select.h>
+#include <string.h>
+/**
+ * pIpe from terminal to hscript already exist
+ * 
+ * pipe we need to worry about is hscript to ls -l
+ * hscript stdin is going out to ls-l
+ * ls -l going out 
+*/
+//Have hscript 
+// 0 should have whatever you're typing don't include <arglist and ls. Inlucde redirectional <>//
+//Use select to check terminal 0 
+//Use select to check ls -l 1 and 2.
+// char* assembledArguments(char **argv, int size){
+//     char *arugments = (char*)malloc(size * 2);
+//     int i = 2;
+//     while(i < size -1){
+//         strcat(arugments, argv[i]);
+//         i++;
+//     }
+//     return arugments;
+//}
+static int status = 0;
+void childHandler(){ //Handle SIG_Child signal
+  status = 1;
+  write(1,"Child been handled\n", sizeof("Child been handled\n"));
+}
+
+char** assembledArguments(char **argc, char **argv, int size){
+    int i = 2;
+    int j = 0;
+    while(i < size -1){
+        argc[j] = argv[i];
+        i++;
+        j++;
+    }
+    argc[j] = NULL;
+    return argc;
+}
+
+int main(int argc, char **argv){
+    if(argc < 4){
+        char error[] = "./hscript <program name> <arguments> <directory>\n";
+        write(2, error , sizeof(error));
+        return -1;
+    }
+    for(int i = 1; i < argc; i++){
+        printf("%s ", argv[i]);
+    }
+    printf("Size %d\n", argc);
+
+    int fd0, fd1, fd2, fd_dir, is_parent, status;
+    //int p2c[2], c2p[2];
+    int p2c0[2], c2p1[2], c2p2[2];
+    char *program = argv[1];
+    char *arguments[argc -1];
+    assembledArguments(arguments, argv, argc);
+    char *dir = argv[argc-1];
+    char file1[50];
+    char file2[50];
+    char file3[50];
+
+    snprintf(file1, strlen(dir) + 3, "%s/0", dir);
+    snprintf(file2, strlen(dir) + 3, "%s/1", dir);
+    snprintf(file3, strlen(dir) + 3, "%s/2", dir);
+
+    printf("%s\n", file1);
+    printf("%s\n", argv[3]);
+    if( (fd_dir =mkdir(dir, 0700)) == -1){
+       perror("EXISTS\n");
+       return -1;
+    }
+    fd0 = open(file1, O_RDONLY | O_TRUNC | O_CREAT, 0600);
+    fd1 = open(file2, O_WRONLY | O_TRUNC | O_CREAT, 0600);
+    fd2 = open(file3, O_WRONLY | O_TRUNC | O_CREAT, 0600);
+    if(fd0 == -1 | fd1 == -1 | fd2 == -1){
+        perror("Files 0,1,2");
+        return -1;
+    }
+  
+    if(pipe(p2c0) == -1 || pipe(c2p1) ==-1 || pipe(c2p2) == -1){ //fd_pip[0] = read and fd_pip[1] is write
+        perror("PIPE");
+        return -1;
+    }
+  
+
+    fd_set read_set;
+    fd_set write_set;
+    //fd_set write_err_set;
+    //fd_set read_set_terminal;
+    
+    //Clear the set
+    //FD_ZERO(&read_set_terminal); // Handling the fd0 from the stdin of terminal
+    FD_ZERO(&read_set);
+    FD_ZERO(&write_set);
+    //Add fd0 to read_set
+    FD_SET(0, &read_set);
+    FD_SET(c2p1[0], &read_set); //Pipe intercept?
+    FD_SET(c2p2[0], &read_set);
+    //Add fd1 to write_set
+    FD_SET(1, &write_set);
+    FD_SET(2, &write_set);
+    FD_SET(p2c0[1], &write_set);
+    
+    //printf("Argument %s\n", args);
+    is_parent = fork();
+    
+    if(!is_parent){
+        //Connect stdin to our pipe
+      write(1,"Child\n",6);
+      close(p2c0[1]);
+        close(0); //Closing stdin so we can attach it to our pipe
+        dup(p2c0[0]); //Create alias of our pipe
+        close(p2c0[0]);
+	//watch 0, 1, and 2
+	//sleep(5);
+        execvp(program, arguments); //Overwrite current processs with given program
+        //free(args);
+        perror("Execvp Returned\n");
+        exit(1);
+    }else{
+        //Parent
+      write(1, "parent\n", 7);
+        close(p2c0[0]);
+        close(1);
+        dup(p2c0[1]);
+        close(p2c0[1]);
+        // printf("Finishing parent processes\n");
+        //Child
+	
+        int ndfs = c2p2[1] + 1; //Highest number fd plus 1
+        printf("Entering select\n");
+
+	struct sigaction childDied;
+	childDied.sa_handler = childHandler;
+	sigaction(SIGCHLD, &childDied, NULL); //Handle when the child terminate
+	
+	
+        //wait(& // wait for child to be dead
+        while(!status){ //To get it checked
+        if(select(ndfs, &read_set, &write_set, NULL, NULL) > 0){ 
+            //If child process the content should still exists.
+            //We should empty this part out.
+            //We're handling multiple arguments
+            printf("Entered select\n");
+            if(FD_ISSET(0, &read_set)){ //fd_pipe[0] is ready
+                printf("Pipe read terminal 0 stream is Read\n");
+            }
+	    if(FD_ISSET(c2p1[0], &read_set)){
+		printf("Pipe from c2p1[0] read\n");
+	    }
+	    if(FD_ISSET(c2p2[0], &read_set)){
+		  printf("Pipe from c2p2[0] read\n");
+	    }
+		
+            if(FD_ISSET(1, &write_set)){ //fd_pipe[0] is ready
+                printf("1 fd  Write Stream \n");
+            }
+            if(FD_ISSET(2, &write_set)){ //if fd3
+                printf("2 fd Write Stream\n");
+            }
+            if(FD_ISSET(p2c0[1], &write_set)){ //if fd2
+                printf("p2c0 pipe fd Write Stream\n");
+            }
+        }
+
+	}
+        //close(fd_pipe[0]); //File been close and nothing left to read.
+
+    }  
+    //wait(NULL);
+
+
+    
+
+    //Writing back to the terminal
+    //write(1,"", );
+    //write(2,"",);
+
+
+    //Storing these to the out_dir
+    
+    
+    //might need child PID
+    close(fd0);
+    close(fd1);
+    close(fd2);
+    //free(args);
+    return 0;
+}

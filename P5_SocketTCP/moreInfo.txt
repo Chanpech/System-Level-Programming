@@ -1,0 +1,2 @@
+See page 36 on how we set up our instances on the server side.
+This will 
